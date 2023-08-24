@@ -20,7 +20,7 @@ export class TableProcessService {
             await workbook.xlsx.load(sheet);
 
             //Busca por cada tabela/aba
-            workbook.eachSheet((worksheet, sheetId) => {
+            workbook.eachSheet(async (worksheet, sheetId) => {
                 let sheet = workbook.getWorksheet(worksheet.name);
                 let rowQuantity = sheet.rowCount - 1; // Desconsiderando cabeçalho da contagem de registros na tabela
                 let columnNames = sheet.getRow(1).values.filter(e => typeof e != "undefined");
@@ -30,7 +30,7 @@ export class TableProcessService {
                     for (let i = 0; i < rowQuantity; i++) {
                         let rowValues = sheet.getRow(rowNum).values.filter(e => typeof e != "undefined");
                         // Realiza o envio do objeto para o banco de dados
-                        this.sendToSQL(this.buildJSON(columnNames, rowValues));
+                        await this.sendToSQL(this.buildJSON(columnNames, rowValues));
                         rowNum++;
                     }
                 }
@@ -49,7 +49,7 @@ export class TableProcessService {
         return obj;
     }
 
-    async sendToSQL(obj: ISheet) {
+    private async sendToSQL(obj: ISheet) {
         await this.databaseService.connect();
         await this.databaseService.query(`INSERT INTO clientes VALUES (${this.buildInsert(obj)})`);
         await this.databaseService.disconnect();

@@ -1,4 +1,5 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { TableProcessService } from 'src/service/table.process.service';
 
 @Controller('process')
@@ -8,7 +9,12 @@ export class TableProcessController {
   ) {}
 
   @Post()
-  async processTable(): Promise<any> {
-    return this.tableProcessService.processTable();
+  async processTable(@Res() res: Response): Promise<any> {
+    try {
+      await this.tableProcessService.processTable();
+      res.status(201).send();
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
 }
